@@ -1,3 +1,5 @@
+import contextlib
+import io
 import unittest
 
 import modulo1_procesos_hilos_planificacion as m1
@@ -23,12 +25,15 @@ class Pruebas(unittest.TestCase):
         self.assertAlmostEqual(promedio_espera(terminados), 8.2)
 
     # --- Pruebas del Módulo 2 ---
-    def test_mutex(self):
-        esperado = 4 * 20
-        # Sin mutex debe haber una pérdida de actualizaciones por condición de carrera
-        self.assertLess(m2.probar(m2.reponer_sin_mutex, 4, 20), esperado)
-        # Con mutex debe dar el valor exacto esperado
-        self.assertEqual(m2.probar(m2.reponer_con_mutex, 4, 20), esperado)
+    def test_productor_consumidor(self):
+        # Dos productores y dos consumidores con cinco libros cada uno
+        with contextlib.redirect_stdout(io.StringIO()):
+            m2.ejecutar_con_sincronizacion()
+        self.assertEqual(len(m2.depositados), 10)
+        self.assertEqual(len(m2.retirados), 10)
+        self.assertEqual(sorted(m2.depositados), sorted(m2.retirados))
+        self.assertEqual(len(set(m2.depositados)), 10)  # sin duplicados
+        self.assertEqual(m2.carrito, [])                # carrito vacío al terminar
 
     # --- Pruebas del Módulo 3 ---
     def test_fragmentacion(self):
